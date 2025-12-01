@@ -11,6 +11,8 @@ interface Option {
   texte: string;
   description?: string;
   ordre: number;
+  nombre_votes?: string;
+  pourcentage?: string;
 }
 
 interface ModalProps {
@@ -288,38 +290,80 @@ export default function DetailSondage() {
                   Vous avez déjà voté
                 </h3>
                 <p className="text-green-700">
-                  Les résultats seront disponibles après la clôture du sondage.
+                  {estFerme ? 'Voici les résultats du sondage' : 'Les résultats seront disponibles après la clôture du sondage.'}
                 </p>
               </div>
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold mb-4">Votre choix:</h3>
+              <h3 className="text-lg font-semibold mb-4">
+                {estFerme ? 'Résultats:' : 'Votre choix:'}
+              </h3>
               <div className="space-y-3">
-                {sondage.options.map((option) => (
-                  <div
-                    key={option.id}
-                    className={`p-4 border-2 rounded-lg ${
-                      sondage.vote?.id_option === option.id
-                        ? 'bg-green-50 border-green-500'
-                        : 'bg-gray-50 border-gray-200'
-                    }`}
-                  >
-                    <div className="flex items-center">
-                      {sondage.vote?.id_option === option.id && (
-                        <span className="mr-3 text-green-600 font-bold">✓</span>
+                {sondage.options.map((option) => {
+                  const estMonVote = sondage.vote?.id_option === option.id;
+                  const maxVotes = estFerme && sondage.options.every((opt: Option) => opt.nombre_votes !== undefined)
+                    ? Math.max(...sondage.options.map((opt: Option) => parseInt(opt.nombre_votes || '0')))
+                    : 0;
+                  const estGagnant = estFerme && parseInt(option.nombre_votes || '0') === maxVotes && maxVotes > 0;
+
+                  return (
+                    <div
+                      key={option.id}
+                      className={`p-4 border-2 rounded-lg ${
+                        estMonVote
+                          ? 'bg-green-50 border-green-500'
+                          : 'bg-gray-50 border-gray-200'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2 flex-1">
+                          {estMonVote && (
+                            <span className="text-green-600 font-bold text-lg">✓</span>
+                          )}
+                          <span className={`text-lg ${
+                            estMonVote ? 'font-semibold text-green-800' : 'text-gray-900'
+                          }`}>
+                            {option.texte}
+                          </span>
+                          {estMonVote && (
+                            <span className="px-2 py-0.5 bg-green-600 text-white text-xs rounded-full">
+                              Votre choix
+                            </span>
+                          )}
+                          {estGagnant && (
+                            <span className="text-lg">🏆</span>
+                          )}
+                        </div>
+                        {estFerme && option.pourcentage !== undefined && (
+                          <div className="flex items-center gap-3">
+                            <span className="text-2xl font-bold text-primary-600">
+                              {option.pourcentage}%
+                            </span>
+                            <span className="text-sm text-gray-500">
+                              ({option.nombre_votes} vote{parseInt(option.nombre_votes || '0') > 1 ? 's' : ''})
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                      {estFerme && option.pourcentage !== undefined && (
+                        <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden mb-2">
+                          <div
+                            className={`absolute top-0 left-0 h-full rounded-full transition-all duration-500 ${
+                              estMonVote
+                                ? 'bg-gradient-to-r from-green-500 to-green-600'
+                                : 'bg-gradient-to-r from-primary-500 to-primary-600'
+                            }`}
+                            style={{ width: `${option.pourcentage}%` }}
+                          />
+                        </div>
                       )}
-                      <span className={`text-lg ${
-                        sondage.vote?.id_option === option.id ? 'font-semibold text-green-800' : 'text-gray-500'
-                      }`}>
-                        {option.texte}
-                      </span>
+                      {option.description && (
+                        <TruncatedDescription description={option.description} titre={option.texte} />
+                      )}
                     </div>
-                    {option.description && (
-                      <TruncatedDescription description={option.description} titre={option.texte} />
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>

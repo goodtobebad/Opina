@@ -5,14 +5,25 @@ import { fr } from 'date-fns/locale';
 import api from '../lib/api';
 import toast from 'react-hot-toast';
 
+interface Option {
+  id: number;
+  texte: string;
+  description?: string;
+  ordre: number;
+  nombre_votes: string;
+  pourcentage: string;
+}
+
 interface Vote {
   id: number;
+  id_sondage: number;
   titre: string;
-  option_choisie: string;
+  option_votee_id: number;
   date_vote: string;
   date_debut: string;
   date_fin: string;
   nombre_votes_total: number;
+  options: Option[];
 }
 
 export default function Historique() {
@@ -59,35 +70,46 @@ export default function Historique() {
         </div>
       ) : (
         <div className="space-y-4">
-          {historique.map((vote) => (
-            <div key={vote.id} className="card">
-              <div className="flex justify-between items-start">
-                <div className="flex-1">
-                  <h3 className="text-xl font-semibold mb-2">{vote.titre}</h3>
-                  <div className="space-y-2 text-sm text-gray-600">
-                    <div>
-                      <span className="font-medium">Votre choix:</span>{' '}
-                      <span className="text-primary-600 font-medium">{vote.option_choisie}</span>
+          {historique.map((vote) => {
+            const estTermine = new Date(vote.date_fin) < new Date();
+            const optionVotee = vote.options.find(opt => opt.id === vote.option_votee_id);
+
+            return (
+              <div key={vote.id} className="card hover:shadow-lg transition-shadow">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <h3 className="text-xl font-semibold mb-2">{vote.titre}</h3>
+                    <div className="space-y-2 text-sm text-gray-600">
+                      <div>
+                        <span className="font-medium">Votre choix:</span>{' '}
+                        <span className="text-primary-600 font-medium">{optionVotee?.texte}</span>
+                      </div>
+                      <div>
+                        <span className="font-medium">Date du vote:</span>{' '}
+                        {format(new Date(vote.date_vote), 'dd MMMM yyyy à HH:mm', { locale: fr })}
+                      </div>
+                      <div>
+                        <span className="font-medium">Participants totaux:</span> {vote.nombre_votes_total}
+                      </div>
                     </div>
-                    <div>
-                      <span className="font-medium">Date du vote:</span>{' '}
-                      {format(new Date(vote.date_vote), 'dd MMMM yyyy à HH:mm', { locale: fr })}
-                    </div>
-                    <div>
-                      <span className="font-medium">Participants totaux:</span> {vote.nombre_votes_total}
-                    </div>
+                  </div>
+                  <div className="flex flex-col items-end gap-2">
+                    {estTermine && (
+                      <span className="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-sm">
+                        Terminé
+                      </span>
+                    )}
+                    <Link 
+                      to={`/sondages/${vote.id_sondage}`}
+                      className="btn-primary text-sm"
+                    >
+                      Voir les résultats
+                    </Link>
                   </div>
                 </div>
-                {new Date(vote.date_fin) < new Date() && (
-                  <div>
-                    <span className="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-sm">
-                      Terminé
-                    </span>
-                  </div>
-                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

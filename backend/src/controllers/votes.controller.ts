@@ -199,17 +199,39 @@ export const obtenirHistorique = async (req: AuthRequest, res: Response) => {
     const id_utilisateur = req.utilisateur!.id;
 
     const result = await pool.query(
-      `SELECT v.*, s.titre, s.date_debut, s.date_fin, o.texte as option_choisie,
+      `SELECT v.id, v.date_vote, v.id_option as option_votee_id,
+       s.id as id_sondage, s.titre, s.date_debut, s.date_fin,
        (SELECT COUNT(*) FROM votes WHERE id_sondage = s.id AND est_valide = true) as nombre_votes_total
        FROM votes v
        JOIN sondages s ON v.id_sondage = s.id
-       JOIN options_sondage o ON v.id_option = o.id
        WHERE v.id_utilisateur = $1 AND v.est_valide = true
        ORDER BY v.date_vote DESC`,
       [id_utilisateur]
     );
 
-    res.json({ historique: result.rows });
+    // Pour chaque vote, récupérer toutes les options avec leurs statistiques
+    const historique = await Promise.all(
+      result.rows.map(async (vote) => {
+        const optionsResult = await pool.query(
+          `SELECT o.id, o.texte, o.description, o.ordre,
+           COUNT(v.id) as nombre_votes,
+           ROUND((COUNT(v.id)::numeric / NULLIF($2, 0)) * 100, 2) as pourcentage
+           FROM options_sondage o
+           LEFT JOIN votes v ON o.id = v.id_option AND v.est_valide = true
+           WHERE o.id_sondage = $1
+           GROUP BY o.id, o.texte, o.description, o.ordre
+           ORDER BY o.ordre`,
+          [vote.id_sondage, vote.nombre_votes_total]
+        );
+
+        return {
+          ...vote,
+          options: optionsResult.rows
+        };
+      })
+    );
+
+    res.json({ historique });
   } catch (error) {
     console.error('Erreur lors de la récupération de l\'historique:', error);
     res.status(500).json({ erreur: 'Erreur lors de la récupération de l\'historique' });

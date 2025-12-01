@@ -62,24 +62,46 @@ export const obtenirSondageParId = async (req: AuthRequest, res: Response) => {
     }
 
     const sondage = sondageResult.rows[0];
+    const estFerme = new Date(sondage.date_fin) <= new Date();
 
-    // Récupérer les options
-    const optionsResult = await pool.query(
-      `SELECT * FROM options_sondage WHERE id_sondage = $1 ORDER BY ordre`,
-      [id]
-    );
-
-    sondage.options = optionsResult.rows;
-
-    // Vérifier si l'utilisateur a déjà voté
+    // Récupérer les options avec statistiques si le sondage est fermé et l'utilisateur a voté
+    let aVote = false;
+    let vote = null;
+    
     if (req.utilisateur) {
       const voteResult = await pool.query(
         `SELECT * FROM votes WHERE id_sondage = $1 AND id_utilisateur = $2`,
         [id, req.utilisateur.id]
       );
-      sondage.a_vote = voteResult.rows.length > 0;
-      sondage.vote = voteResult.rows[0] || null;
+      aVote = voteResult.rows.length > 0;
+      vote = voteResult.rows[0] || null;
     }
+
+    // Si le sondage est fermé et l'utilisateur a voté, inclure les statistiques
+    if (estFerme && aVote) {
+      const optionsResult = await pool.query(
+        `SELECT o.id, o.texte, o.description, o.ordre,
+         COUNT(v.id) as nombre_votes,
+         ROUND((COUNT(v.id)::numeric / NULLIF($2, 0)) * 100, 2) as pourcentage
+         FROM options_sondage o
+         LEFT JOIN votes v ON o.id = v.id_option AND v.est_valide = true
+         WHERE o.id_sondage = $1
+         GROUP BY o.id, o.texte, o.description, o.ordre
+         ORDER BY o.ordre`,
+        [id, sondage.nombre_votes]
+      );
+      sondage.options = optionsResult.rows;
+    } else {
+      // Sinon, récupérer juste les options normales
+      const optionsResult = await pool.query(
+        `SELECT * FROM options_sondage WHERE id_sondage = $1 ORDER BY ordre`,
+        [id]
+      );
+      sondage.options = optionsResult.rows;
+    }
+
+    sondage.a_vote = aVote;
+    sondage.vote = vote;
 
     res.json({ sondage });
   } catch (error) {
