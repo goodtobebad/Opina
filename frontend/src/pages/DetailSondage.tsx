@@ -9,6 +9,7 @@ import { useAuth } from '../context/AuthContext';
 interface Option {
   id: number;
   texte: string;
+  description?: string;
   ordre: number;
 }
 
@@ -199,11 +200,16 @@ export default function DetailSondage() {
                 {sondage.options.map((option) => (
                   <div
                     key={option.id}
-                    className="flex items-center p-4 border-2 rounded-lg bg-gray-50 border-gray-200"
+                    className="p-4 border-2 rounded-lg bg-gray-50 border-gray-200"
                   >
-                    <span className="text-lg text-gray-700">
+                    <div className="text-lg font-medium text-gray-900 mb-1">
                       {option.texte}
-                    </span>
+                    </div>
+                    {option.description && (
+                      <div className="text-sm text-gray-600 mt-2 pl-3 border-l-2 border-gray-300">
+                        {option.description}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -229,20 +235,31 @@ export default function DetailSondage() {
                 {sondage.options.map((option) => (
                   <div
                     key={option.id}
-                    className={`flex items-center p-4 border-2 rounded-lg ${
+                    className={`p-4 border-2 rounded-lg ${
                       sondage.vote?.id_option === option.id
                         ? 'bg-green-50 border-green-500'
                         : 'bg-gray-50 border-gray-200'
                     }`}
                   >
-                    {sondage.vote?.id_option === option.id && (
-                      <span className="mr-3 text-green-600 font-bold">✓</span>
+                    <div className="flex items-center">
+                      {sondage.vote?.id_option === option.id && (
+                        <span className="mr-3 text-green-600 font-bold">✓</span>
+                      )}
+                      <span className={`text-lg ${
+                        sondage.vote?.id_option === option.id ? 'font-semibold text-green-800' : 'text-gray-500'
+                      }`}>
+                        {option.texte}
+                      </span>
+                    </div>
+                    {option.description && (
+                      <div className={`text-sm mt-2 pl-3 border-l-2 ${
+                        sondage.vote?.id_option === option.id
+                          ? 'text-green-700 border-green-300'
+                          : 'text-gray-600 border-gray-300'
+                      }`}>
+                        {option.description}
+                      </div>
                     )}
-                    <span className={`text-lg ${
-                      sondage.vote?.id_option === option.id ? 'font-semibold text-green-800' : 'text-gray-500'
-                    }`}>
-                      {option.texte}
-                    </span>
                   </div>
                 ))}
               </div>
@@ -281,20 +298,29 @@ export default function DetailSondage() {
                 {sondage.options.map((option) => (
                   <label
                     key={option.id}
-                    className="flex items-center p-4 border-2 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                    className="block p-4 border-2 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
                     style={{
                       borderColor: optionSelectionnee === option.id ? '#2563eb' : '#e5e7eb'
                     }}
                   >
-                    <input
-                      type="radio"
-                      name="option"
-                      value={option.id}
-                      checked={optionSelectionnee === option.id}
-                      onChange={() => setOptionSelectionnee(option.id)}
-                      className="mr-3 h-5 w-5 text-primary-600"
-                    />
-                    <span className="text-lg">{option.texte}</span>
+                    <div className="flex items-center">
+                      <input
+                        type="radio"
+                        name="option"
+                        value={option.id}
+                        checked={optionSelectionnee === option.id}
+                        onChange={() => setOptionSelectionnee(option.id)}
+                        className="mr-3 h-5 w-5 text-primary-600 flex-shrink-0"
+                      />
+                      <div className="flex-1">
+                        <div className="text-lg font-medium">{option.texte}</div>
+                        {option.description && (
+                          <div className="text-sm text-gray-600 mt-2 pl-3 border-l-2 border-gray-300">
+                            {option.description}
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </label>
                 ))}
               </div>

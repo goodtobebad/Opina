@@ -11,13 +11,13 @@ interface FormData {
   heure_debut: string;
   date_fin: string;
   heure_fin: string;
-  options: { texte: string }[];
+  options: { texte: string; description: string }[];
 }
 
 export default function CreerSondage() {
   const { register, handleSubmit, control, watch, formState: { errors } } = useForm<FormData>({
     defaultValues: {
-      options: [{ texte: '' }, { texte: '' }]
+      options: [{ texte: '', description: '' }, { texte: '', description: '' }]
     }
   });
   const { fields, append, remove } = useFieldArray({
@@ -80,7 +80,10 @@ export default function CreerSondage() {
         description: data.description || null,
         date_debut: dateDebut.toISOString(),
         date_fin: dateFin.toISOString(),
-        options: optionsValides.map(opt => opt.texte.trim())
+        options: optionsValides.map(opt => ({
+          texte: opt.texte.trim(),
+          description: opt.description?.trim() || null
+        }))
       });
 
       toast.success('Sondage créé avec succès !');
@@ -212,32 +215,51 @@ export default function CreerSondage() {
             <label className="block text-sm font-medium text-gray-700 mb-3">
               Options du sondage * (minimum 2)
             </label>
-            <div className="space-y-3">
+            <div className="space-y-4">
               {fields.map((field, index) => (
-                <div key={field.id} className="flex space-x-2">
-                  <input
-                    type="text"
-                    {...register(`options.${index}.texte` as const)}
-                    className="input-field flex-1"
-                    placeholder={`Option ${index + 1}`}
-                    disabled={chargement}
-                  />
-                  {fields.length > 2 && (
-                    <button
-                      type="button"
-                      onClick={() => remove(index)}
-                      className="px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
+                <div key={field.id} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                  <div className="flex items-start space-x-2 mb-2">
+                    <div className="flex-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Option {index + 1} *
+                      </label>
+                      <input
+                        type="text"
+                        {...register(`options.${index}.texte` as const)}
+                        className="input-field"
+                        placeholder={`Nom de l'option`}
+                        disabled={chargement}
+                      />
+                    </div>
+                    {fields.length > 2 && (
+                      <button
+                        type="button"
+                        onClick={() => remove(index)}
+                        className="mt-7 px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
+                        disabled={chargement}
+                      >
+                        Supprimer
+                      </button>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Description <span className="text-gray-500">(optionnel - ex: programme politique, lien, etc.)</span>
+                    </label>
+                    <textarea
+                      {...register(`options.${index}.description` as const)}
+                      className="input-field"
+                      placeholder="Ajoutez une description ou un lien pour cette option"
+                      rows={2}
                       disabled={chargement}
-                    >
-                      Supprimer
-                    </button>
-                  )}
+                    />
+                  </div>
                 </div>
               ))}
             </div>
             <button
               type="button"
-              onClick={() => append({ texte: '' })}
+              onClick={() => append({ texte: '', description: '' })}
               className="mt-3 btn-secondary"
               disabled={chargement}
             >
