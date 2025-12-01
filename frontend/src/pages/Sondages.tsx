@@ -18,6 +18,7 @@ interface Sondage {
 export default function Sondages() {
   const [sondages, setSondages] = useState<Sondage[]>([]);
   const [chargement, setChargement] = useState(true);
+  const [recherche, setRecherche] = useState('');
 
   useEffect(() => {
     chargerSondages();
@@ -42,8 +43,18 @@ export default function Sondages() {
     return new Date(dateDebut) > new Date();
   };
 
-  const sondagesOuverts = sondages.filter(s => estOuvert(s.date_debut));
-  const sondagesAVenir = sondages.filter(s => estAVenir(s.date_debut));
+  const filtrerSondages = (sondagesList: Sondage[]) => {
+    if (!recherche.trim()) return sondagesList;
+    
+    const termeRecherche = recherche.toLowerCase();
+    return sondagesList.filter(sondage => 
+      sondage.titre.toLowerCase().includes(termeRecherche) ||
+      sondage.description?.toLowerCase().includes(termeRecherche)
+    );
+  };
+
+  const sondagesOuverts = filtrerSondages(sondages.filter(s => estOuvert(s.date_debut)));
+  const sondagesAVenir = filtrerSondages(sondages.filter(s => estAVenir(s.date_debut)));
 
   if (chargement) {
     return (
@@ -54,7 +65,52 @@ export default function Sondages() {
   }
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold mb-4">Sondages</h1>
+        
+        {/* Barre de recherche */}
+        <div className="card">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Rechercher un sondage par nom ou description..."
+              value={recherche}
+              onChange={(e) => setRecherche(e.target.value)}
+              className="input-field pl-10"
+            />
+            <svg
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+            {recherche && (
+              <button
+                onClick={() => setRecherche('')}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+          </div>
+          {recherche && (
+            <div className="mt-2 text-sm text-gray-600">
+              {sondagesOuverts.length + sondagesAVenir.length} résultat{sondagesOuverts.length + sondagesAVenir.length > 1 ? 's' : ''} trouvé{sondagesOuverts.length + sondagesAVenir.length > 1 ? 's' : ''}
+            </div>
+          )}
+        </div>
+      </div>
+
       {sondages.length === 0 ? (
         <div className="card text-center py-12">
           <div className="text-5xl mb-4">📊</div>
@@ -62,6 +118,17 @@ export default function Sondages() {
           <p className="text-gray-600">
             Il n'y a actuellement aucun sondage disponible. Revenez plus tard !
           </p>
+        </div>
+      ) : (sondagesOuverts.length === 0 && sondagesAVenir.length === 0) ? (
+        <div className="card text-center py-12">
+          <div className="text-5xl mb-4">🔍</div>
+          <h3 className="text-xl font-semibold mb-2">Aucun résultat</h3>
+          <p className="text-gray-600 mb-4">
+            Aucun sondage ne correspond à votre recherche "{recherche}".
+          </p>
+          <button onClick={() => setRecherche('')} className="btn-secondary">
+            Effacer la recherche
+          </button>
         </div>
       ) : (
         <>
