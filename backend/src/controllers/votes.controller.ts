@@ -97,7 +97,7 @@ export const voter = async (req: AuthRequest, res: Response) => {
       if (type_validation === 'email') {
         await envoyerEmail(
           utilisateur.email,
-          'Code de validation Sondy',
+          'Code de validation Opina',
           `Votre code de validation est: ${code}\n\nCe code expire dans 15 minutes.`
         );
       } else if (type_validation === 'sms') {
@@ -106,7 +106,7 @@ export const voter = async (req: AuthRequest, res: Response) => {
         }
         await envoyerSMS(
           utilisateur.numero_telephone,
-          `Votre code de validation Sondy est: ${code}`
+          `Votre code de validation Opina est: ${code}`
         );
       }
     } catch (notificationError) {

@@ -27,7 +27,7 @@ app.use('/api/statistiques', statistiquesRoutes);
 
 // Route de test
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', message: 'API Sondy fonctionnelle' });
+  res.json({ status: 'OK', message: 'API Opina fonctionnelle' });
 });
 
 // Gestion des erreurs 404

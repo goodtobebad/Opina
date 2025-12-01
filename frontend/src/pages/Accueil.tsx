@@ -9,7 +9,7 @@ export default function Accueil() {
       {/* Hero Section */}
       <section className="text-center py-12">
         <h1 className="text-5xl font-bold text-gray-900 mb-4">
-          Bienvenue sur Sondy
+          Bienvenue sur Opina
         </h1>
         <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
           La plateforme française pour créer et participer à des sondages en toute simplicité

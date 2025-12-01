@@ -22,7 +22,7 @@ export default function Layout() {
           <div className="flex justify-between h-16">
             <div className="flex items-center space-x-8">
               <Link to="/" className="flex items-center">
-                <h1 className="text-2xl font-bold text-primary-600">Sondy</h1>
+                <h1 className="text-2xl font-bold text-primary-600">Opina</h1>
               </Link>
               <div className="hidden md:flex space-x-6">
                 <Link to="/" className={isActive('/')}>
@@ -87,7 +87,7 @@ export default function Layout() {
       <footer className="bg-white border-t mt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <p className="text-center text-gray-600">
-            © 2025 Sondy - Tous droits réservés
+            © 2025 Opina - Tous droits réservés
           </p>
         </div>
       </footer>
