@@ -1,10 +1,10 @@
-# Sondy
+# Opina
 
 Application web full-stack pour créer et participer à des sondages en français.
 
 ## Vue d'ensemble
 
-Sondy est une plateforme de sondages permettant:
+Opina est une plateforme de sondages permettant:
 - Aux **administrateurs** de créer des sondages avec options multiples et dates d'ouverture/clôture
 - Aux **utilisateurs** de consulter et voter sur les sondages disponibles
 - La **validation** des votes par email ou SMS pour garantir l'authenticité
@@ -34,7 +34,7 @@ Sondy est une plateforme de sondages permettant:
 ### 1. Cloner le projet
 ```bash
 git clone <repository-url>
-cd Sondy
+cd Opina
 ```
 
 ### 2. Configuration Backend
@@ -44,8 +44,8 @@ cd backend
 npm install
 
 # Créer la base de données
-createdb sondy
-psql -d sondy -f database/schema.sql
+createdb opina
+psql -d opina -f database/schema.sql
 
 # Configuration
 cp .env.example .env
@@ -80,7 +80,7 @@ L'application sera disponible sur:
 ## Structure du projet
 
 ```
-Sondy/
+Opina/
 ├── backend/              # API Node.js/Express
 │   ├── src/
 │   │   ├── config/       # Configuration DB
@@ -168,7 +168,7 @@ Schéma PostgreSQL avec:
 ```env
 DB_HOST=localhost
 DB_PORT=5432
-DB_NAME=sondy
+DB_NAME=opina
 DB_USER=postgres
 DB_PASSWORD=...
 

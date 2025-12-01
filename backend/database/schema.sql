@@ -1,4 +1,4 @@
--- Schema de base de données pour Sondy
+-- Schema de base de données pour Opina
 
 -- Table des utilisateurs
 CREATE TABLE utilisateurs (

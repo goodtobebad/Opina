@@ -1,6 +1,6 @@
-# Frontend Sondy
+# Frontend Opina
 
-Application React pour la plateforme de sondages Sondy.
+Application React pour la plateforme de sondages Opina.
 
 ## Technologies
 

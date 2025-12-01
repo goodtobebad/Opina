@@ -4,7 +4,7 @@ const { Pool } = require('./backend/node_modules/pg');
 const pool = new Pool({
   host: 'localhost',
   port: 5432,
-  database: 'sondy',
+  database: 'opina',
   user: 'postgres',
   password: process.argv[2] || 'postgres' // PostgreSQL password from command line or default
 });
@@ -18,7 +18,7 @@ async function createAdmin() {
     const result = await pool.query(
       `UPDATE utilisateurs 
        SET mot_de_passe = $1 
-       WHERE email = 'admin@sondy.com' 
+       WHERE email = 'admin@opina.com' 
        RETURNING id, nom, email, est_admin`,
       [hashedPassword]
     );
@@ -26,7 +26,7 @@ async function createAdmin() {
     if (result.rows.length > 0) {
       console.log('\n✅ Admin account updated successfully!');
       console.log('\nCredentials:');
-      console.log('Email: admin@sondy.com');
+      console.log('Email: admin@opina.com');
       console.log('Password: admin123');
       console.log('\nYou can now login at: http://localhost:5173/connexion');
     }

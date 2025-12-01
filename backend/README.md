@@ -1,6 +1,6 @@
-# Backend Sondy
+# Backend Opina
 
-API REST pour l'application Sondy - plateforme de sondages en français.
+API REST pour l'application Opina - plateforme de sondages en français.
 
 ## Technologies
 
@@ -22,10 +22,10 @@ npm install
 2. Configurer la base de données PostgreSQL :
 ```bash
 # Créer la base de données
-createdb sondy
+createdb opina
 
 # Exécuter le schéma
-psql -d sondy -f database/schema.sql
+psql -d opina -f database/schema.sql
 ```
 
 3. Configuration de l'environnement :

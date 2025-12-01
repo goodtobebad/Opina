@@ -1,6 +1,6 @@
-# Guide de configuration de Sondy
+# Guide de configuration d'Opina
 
-Ce guide vous aidera à installer et configurer l'application Sondy depuis zéro.
+Ce guide vous aidera à installer et configurer l'application Opina depuis zéro.
 
 ## Prérequis
 
@@ -46,7 +46,7 @@ npm install
 psql -U postgres
 
 # Créer la base de données (dans psql)
-CREATE DATABASE sondy;
+CREATE DATABASE opina;
 
 # Quitter psql
 \q
@@ -55,7 +55,7 @@ CREATE DATABASE sondy;
 #### Initialiser le schéma
 ```bash
 # Depuis la racine du projet
-psql -U postgres -d sondy -f backend/database/schema.sql
+psql -U postgres -d opina -f backend/database/schema.sql
 ```
 
 ### 3. Configuration de l'environnement
@@ -72,7 +72,7 @@ cp .env.example .env
 # Base de données
 DB_HOST=localhost
 DB_PORT=5432
-DB_NAME=sondy
+DB_NAME=opina
 DB_USER=postgres
 DB_PASSWORD=votre_mot_de_passe_postgres
 
@@ -140,7 +140,7 @@ Par défaut, les nouveaux comptes ne sont pas administrateurs. Pour créer un ad
 
 ### Option 1: Directement dans la base de données
 ```bash
-psql -U postgres -d sondy
+psql -U postgres -d opina
 
 UPDATE utilisateurs SET est_admin = true WHERE email = 'votre_email@example.com';
 ```
@@ -152,11 +152,11 @@ Dans `backend/src/controllers/auth.controller.ts`, vous pouvez temporairement mo
 
 ### 1. Tester le backend
 Ouvrez http://localhost:3000/api/health dans votre navigateur.
-Vous devriez voir: `{"status":"OK","message":"API Sondy fonctionnelle"}`
+Vous devriez voir: `{"status":"OK","message":"API Opina fonctionnelle"}`
 
 ### 2. Tester le frontend
 Allez sur http://localhost:5173
-Vous devriez voir la page d'accueil de Sondy.
+Vous devriez voir la page d'accueil d'Opina.
 
 ### 3. Tester l'inscription
 1. Cliquez sur "Inscription"
@@ -181,7 +181,7 @@ npm install
 ### Erreur de connexion à PostgreSQL
 - Vérifiez que PostgreSQL est démarré
 - Vérifiez les informations de connexion dans `.env`
-- Vérifiez que la base de données `sondy` existe
+- Vérifiez que la base de données `opina` existe
 
 ### Le frontend ne se connecte pas au backend
 - Vérifiez que le backend tourne sur le port 3000

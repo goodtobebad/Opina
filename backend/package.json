@@ -1,7 +1,7 @@
 {
-  "name": "sondy-backend",
+  "name": "opina-backend",
   "version": "1.0.0",
-  "description": "Backend API pour l'application Sondy",
+  "description": "Backend API pour l'application Opina",
   "main": "dist/index.js",
   "scripts": {
     "dev": "nodemon src/index.ts",

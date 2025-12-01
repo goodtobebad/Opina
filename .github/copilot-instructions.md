@@ -1,7 +1,7 @@
-# Instructions Copilot pour Sondy
+# Instructions Copilot pour Opina
 
 ## Vue d'ensemble du projet
-Sondy est une application web full-stack en français permettant de créer et participer à des sondages.
+Opina est une application web full-stack en français permettant de créer et participer à des sondages.
 
 ## Technologies utilisées
 - **Frontend**: React, TypeScript, Vite, TailwindCSS, React Router
@@ -33,7 +33,7 @@ Sondy est une application web full-stack en français permettant de créer et pa
 
 ✅ **Structure complète créée !**
 
-Le projet Sondy est maintenant entièrement scaffoldé avec:
+Le projet Opina est maintenant entièrement scaffoldé avec:
 - Backend Node.js/Express/TypeScript avec tous les endpoints
 - Frontend React/TypeScript/Vite avec toutes les pages
 - Schéma de base de données PostgreSQL
@@ -53,8 +53,8 @@ Le projet Sondy est maintenant entièrement scaffoldé avec:
    ```
 4. **Configurer la base de données**:
    ```bash
-   createdb sondy
-   psql -d sondy -f backend/database/schema.sql
+   createdb opina
+   psql -d opina -f backend/database/schema.sql
    ```
 5. **Configurer l'environnement**:
    ```bash
