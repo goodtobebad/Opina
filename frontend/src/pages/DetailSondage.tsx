@@ -13,6 +13,72 @@ interface Option {
   ordre: number;
 }
 
+interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  titre: string;
+  description: string;
+}
+
+function DescriptionModal({ isOpen, onClose, titre, description }: ModalProps) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+        <div className="p-6 border-b flex-shrink-0">
+          <div className="flex justify-between items-start">
+            <h3 className="text-xl font-bold text-gray-900">{titre}</h3>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+        <div className="p-6 overflow-y-auto flex-1">
+          <p className="text-gray-700 whitespace-pre-wrap">{description}</p>
+        </div>
+        <div className="p-4 border-t bg-gray-50 flex-shrink-0">
+          <button onClick={onClose} className="btn-secondary w-full">
+            Fermer
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TruncatedDescription({ description, titre }: { description: string; titre: string }) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const maxLength = 100;
+  const shouldTruncate = description.length > maxLength;
+  const truncatedText = shouldTruncate ? description.substring(0, maxLength) + '...' : description;
+
+  return (
+    <>
+      <div className="text-sm text-gray-600 mt-2 pl-3 border-l-2 border-gray-300">
+        {truncatedText}
+        {shouldTruncate && (
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="ml-2 text-primary-600 hover:text-primary-700 font-medium"
+          >
+            Afficher plus
+          </button>
+        )}
+      </div>
+      <DescriptionModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        titre={titre}
+        description={description}
+      />
+    </>
+  );
+}
+
 interface Sondage {
   id: number;
   titre: string;
@@ -206,9 +272,7 @@ export default function DetailSondage() {
                       {option.texte}
                     </div>
                     {option.description && (
-                      <div className="text-sm text-gray-600 mt-2 pl-3 border-l-2 border-gray-300">
-                        {option.description}
-                      </div>
+                      <TruncatedDescription description={option.description} titre={option.texte} />
                     )}
                   </div>
                 ))}
@@ -252,13 +316,7 @@ export default function DetailSondage() {
                       </span>
                     </div>
                     {option.description && (
-                      <div className={`text-sm mt-2 pl-3 border-l-2 ${
-                        sondage.vote?.id_option === option.id
-                          ? 'text-green-700 border-green-300'
-                          : 'text-gray-600 border-gray-300'
-                      }`}>
-                        {option.description}
-                      </div>
+                      <TruncatedDescription description={option.description} titre={option.texte} />
                     )}
                   </div>
                 ))}
@@ -315,9 +373,7 @@ export default function DetailSondage() {
                       <div className="flex-1">
                         <div className="text-lg font-medium">{option.texte}</div>
                         {option.description && (
-                          <div className="text-sm text-gray-600 mt-2 pl-3 border-l-2 border-gray-300">
-                            {option.description}
-                          </div>
+                          <TruncatedDescription description={option.description} titre={option.texte} />
                         )}
                       </div>
                     </div>

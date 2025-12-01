@@ -26,8 +26,15 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/connexion';
+      // Ne rediriger que si on est déjà connecté (token invalide/expiré)
+      // Pas si on est sur la page de connexion (échec de connexion)
+      const token = localStorage.getItem('token');
+      const isLoginPage = window.location.pathname === '/connexion';
+      
+      if (token && !isLoginPage) {
+        localStorage.removeItem('token');
+        window.location.href = '/connexion';
+      }
     }
     return Promise.reject(error);
   }

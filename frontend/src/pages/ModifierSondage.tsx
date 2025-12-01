@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import api from '../lib/api';
 
@@ -11,11 +11,20 @@ interface FormData {
   heure_debut: string;
   date_fin: string;
   heure_fin: string;
+  options: { id?: number; texte: string; description: string }[];
 }
 
 export default function ModifierSondage() {
   const { id } = useParams();
-  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormData>();
+  const { register, handleSubmit, setValue, watch, control, formState: { errors } } = useForm<FormData>({
+    defaultValues: {
+      options: []
+    }
+  });
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: 'options'
+  });
   const navigate = useNavigate();
   const [chargement, setChargement] = useState(true);
   const [enCoursModification, setEnCoursModification] = useState(false);
@@ -64,6 +73,11 @@ export default function ModifierSondage() {
       setValue('heure_debut', dateDebut.toTimeString().slice(0, 5));
       setValue('date_fin', dateFin.toISOString().split('T')[0]);
       setValue('heure_fin', dateFin.toTimeString().slice(0, 5));
+      setValue('options', sondage.options.map((opt: any) => ({
+        id: opt.id,
+        texte: opt.texte,
+        description: opt.description || ''
+      })));
     } catch (error: any) {
       toast.error(error.response?.data?.erreur || 'Erreur lors du chargement du sondage');
       navigate('/admin/gerer-sondages');
@@ -73,6 +87,13 @@ export default function ModifierSondage() {
   };
 
   const onSubmit = async (data: FormData) => {
+    // Validation: au moins 2 options non vides
+    const optionsValides = data.options.filter(opt => opt.texte.trim());
+    if (optionsValides.length < 2) {
+      toast.error('Veuillez fournir au moins 2 options');
+      return;
+    }
+
     const dateDebut = new Date(`${data.date_debut}T${data.heure_debut}`);
     const dateFin = new Date(`${data.date_fin}T${data.heure_fin}`);
     const maintenant = new Date();
@@ -93,7 +114,12 @@ export default function ModifierSondage() {
         titre: data.titre,
         description: data.description || null,
         date_debut: dateDebut.toISOString(),
-        date_fin: dateFin.toISOString()
+        date_fin: dateFin.toISOString(),
+        options: optionsValides.map(opt => ({
+          id: opt.id,
+          texte: opt.texte.trim(),
+          description: opt.description?.trim() || null
+        }))
       });
 
       toast.success('Sondage modifié avec succès !');
@@ -229,11 +255,60 @@ export default function ModifierSondage() {
             </div>
           </div>
 
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <p className="text-sm text-yellow-800">
-              <strong>Note:</strong> Les options du sondage ne peuvent pas être modifiées. 
-              Seuls le titre, la description et les dates peuvent être mis à jour.
-            </p>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Options du sondage * (minimum 2)
+            </label>
+            <div className="space-y-4">
+              {fields.map((field, index) => (
+                <div key={field.id} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                  <div className="flex items-start space-x-2 mb-2">
+                    <div className="flex-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Option {index + 1} *
+                      </label>
+                      <input
+                        type="text"
+                        {...register(`options.${index}.texte` as const)}
+                        className="input-field"
+                        placeholder={`Nom de l'option`}
+                        disabled={enCoursModification}
+                      />
+                    </div>
+                    {fields.length > 2 && (
+                      <button
+                        type="button"
+                        onClick={() => remove(index)}
+                        className="mt-7 px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
+                        disabled={enCoursModification}
+                      >
+                        Supprimer
+                      </button>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Description <span className="text-gray-500">(optionnel - ex: programme politique, lien, etc.)</span>
+                    </label>
+                    <textarea
+                      {...register(`options.${index}.description` as const)}
+                      className="input-field"
+                      placeholder="Ajoutez une description ou un lien pour cette option"
+                      rows={2}
+                      disabled={enCoursModification}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => append({ texte: '', description: '' })}
+              className="mt-3 btn-secondary"
+              disabled={enCoursModification}
+            >
+              + Ajouter une option
+            </button>
           </div>
 
           <div className="flex space-x-4 pt-4">

@@ -155,12 +155,14 @@ export const creerSondage = async (req: AuthRequest, res: Response) => {
 
 // Modifier un sondage (admin)
 export const modifierSondage = async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  
   try {
     const { id } = req.params;
-    const { titre, description, date_debut, date_fin } = req.body;
+    const { titre, description, date_debut, date_fin, options } = req.body;
 
     // Vérifier que le sondage existe
-    const sondageExistant = await pool.query(
+    const sondageExistant = await client.query(
       'SELECT * FROM sondages WHERE id = $1',
       [id]
     );
@@ -179,7 +181,7 @@ export const modifierSondage = async (req: AuthRequest, res: Response) => {
 
     // Si un nouveau titre est fourni, vérifier qu'il n'existe pas déjà
     if (titre && titre !== sondage.titre) {
-      const titreExistant = await pool.query(
+      const titreExistant = await client.query(
         'SELECT id FROM sondages WHERE titre = $1 AND id != $2',
         [titre, id]
       );
@@ -197,8 +199,10 @@ export const modifierSondage = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ erreur: 'La date de fin doit être après la date de début' });
     }
 
+    await client.query('BEGIN');
+
     // Mettre à jour le sondage
-    const result = await pool.query(
+    const result = await client.query(
       `UPDATE sondages 
        SET titre = COALESCE($1, titre),
            description = COALESCE($2, description),
@@ -210,13 +214,35 @@ export const modifierSondage = async (req: AuthRequest, res: Response) => {
       [titre, description, date_debut, date_fin, id]
     );
 
+    // Si des options sont fournies, les mettre à jour
+    if (options && Array.isArray(options)) {
+      // Supprimer les anciennes options
+      await client.query('DELETE FROM options_sondage WHERE id_sondage = $1', [id]);
+
+      // Créer les nouvelles options
+      const optionsPromises = options.map((option: { id?: number; texte: string; description?: string }, index: number) => {
+        return client.query(
+          `INSERT INTO options_sondage (id_sondage, texte, description, ordre)
+           VALUES ($1, $2, $3, $4) RETURNING *`,
+          [id, option.texte, option.description || null, index]
+        );
+      });
+
+      await Promise.all(optionsPromises);
+    }
+
+    await client.query('COMMIT');
+
     res.json({
       message: 'Sondage modifié avec succès',
       sondage: result.rows[0]
     });
   } catch (error) {
+    await client.query('ROLLBACK');
     console.error('Erreur lors de la modification du sondage:', error);
     res.status(500).json({ erreur: 'Erreur lors de la modification du sondage' });
+  } finally {
+    client.release();
   }
 };
 
