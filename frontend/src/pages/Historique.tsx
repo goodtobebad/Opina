@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { format } from 'date-fns';
+import { format, getYear, getMonth } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import api from '../lib/api';
 import toast from 'react-hot-toast';
@@ -26,23 +26,62 @@ interface Vote {
   options: Option[];
 }
 
+const moisNoms = [
+  'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+  'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+];
+
 export default function Historique() {
   const [historique, setHistorique] = useState<Vote[]>([]);
+  const [historiqueFiltré, setHistoriqueFiltré] = useState<Vote[]>([]);
   const [chargement, setChargement] = useState(true);
+  const [annéeSélectionnée, setAnnéeSélectionnée] = useState<string>('all');
+  const [moisSélectionné, setMoisSélectionné] = useState<string>('all');
+  const [annéesDisponibles, setAnnéesDisponibles] = useState<number[]>([]);
 
   useEffect(() => {
     chargerHistorique();
   }, []);
 
+  useEffect(() => {
+    filtrerHistorique();
+  }, [historique, annéeSélectionnée, moisSélectionné]);
+
   const chargerHistorique = async () => {
     try {
       const response = await api.get('/votes/historique');
-      setHistorique(response.data.historique);
+      const votes = response.data.historique;
+      setHistorique(votes);
+      
+      // Extraire les années disponibles
+      const années = [...new Set(votes.map((vote: Vote) => getYear(new Date(vote.date_vote))))];
+      setAnnéesDisponibles(années.sort((a, b) => b - a));
     } catch (error: any) {
       toast.error('Erreur lors du chargement de l\'historique');
     } finally {
       setChargement(false);
     }
+  };
+
+  const filtrerHistorique = () => {
+    let résultat = [...historique];
+
+    if (annéeSélectionnée !== 'all') {
+      const année = parseInt(annéeSélectionnée);
+      résultat = résultat.filter(vote => getYear(new Date(vote.date_vote)) === année);
+
+      if (moisSélectionné !== 'all') {
+        const mois = parseInt(moisSélectionné);
+        résultat = résultat.filter(vote => getMonth(new Date(vote.date_vote)) === mois);
+      }
+    }
+
+    setHistoriqueFiltré(résultat);
+  };
+
+  const réinitialiserFiltres = () => {
+    setAnnéeSélectionnée('all');
+    setMoisSélectionné('all');
   };
 
   if (chargement) {
@@ -69,8 +108,77 @@ export default function Historique() {
           </Link>
         </div>
       ) : (
-        <div className="space-y-4">
-          {historique.map((vote) => {
+        <>
+          {/* Filtres */}
+          <div className="card mb-6">
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="flex-1 min-w-[200px]">
+                <label htmlFor="année" className="block text-sm font-medium text-gray-700 mb-1">
+                  Année
+                </label>
+                <select
+                  id="année"
+                  value={annéeSélectionnée}
+                  onChange={(e) => {
+                    setAnnéeSélectionnée(e.target.value);
+                    setMoisSélectionné('all'); // Réinitialiser le mois quand on change d'année
+                  }}
+                  className="input-field"
+                >
+                  <option value="all">Toutes les années</option>
+                  {annéesDisponibles.map(année => (
+                    <option key={année} value={année}>{année}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex-1 min-w-[200px]">
+                <label htmlFor="mois" className="block text-sm font-medium text-gray-700 mb-1">
+                  Mois
+                </label>
+                <select
+                  id="mois"
+                  value={moisSélectionné}
+                  onChange={(e) => setMoisSélectionné(e.target.value)}
+                  className="input-field"
+                  disabled={annéeSélectionnée === 'all'}
+                >
+                  <option value="all">Tous les mois</option>
+                  {moisNoms.map((nom, index) => (
+                    <option key={index} value={index}>{nom}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex items-end gap-2">
+                <button
+                  onClick={réinitialiserFiltres}
+                  className="btn-secondary"
+                >
+                  Réinitialiser
+                </button>
+                <div className="text-sm text-gray-600 px-3 py-2 bg-gray-50 rounded-lg">
+                  {historiqueFiltré.length} résultat{historiqueFiltré.length > 1 ? 's' : ''}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Liste des votes */}
+          {historiqueFiltré.length === 0 ? (
+            <div className="card text-center py-12">
+              <div className="text-4xl mb-4">🔍</div>
+              <h3 className="text-xl font-semibold mb-2">Aucun résultat</h3>
+              <p className="text-gray-600 mb-4">
+                Aucun vote trouvé pour les critères sélectionnés.
+              </p>
+              <button onClick={réinitialiserFiltres} className="btn-secondary">
+                Voir tous les votes
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {historiqueFiltré.map((vote) => {
             const estTermine = new Date(vote.date_fin) < new Date();
             const optionVotee = vote.options.find(opt => opt.id === vote.option_votee_id);
 
@@ -111,6 +219,8 @@ export default function Historique() {
             );
           })}
         </div>
+          )}
+        </>
       )}
     </div>
   );
