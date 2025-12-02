@@ -1,16 +1,12 @@
-import nodemailer from 'nodemailer';
+import * as brevo from '@getbrevo/brevo';
 import twilio from 'twilio';
 
-// Configuration du transporteur email
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST,
-  port: parseInt(process.env.EMAIL_PORT || '587'),
-  secure: false,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD
-  }
-});
+// Configuration de Brevo (anciennement Sendinblue)
+const brevoApi = new brevo.TransactionalEmailsApi();
+brevoApi.setApiKey(
+  brevo.TransactionalEmailsApiApiKeys.apiKey,
+  process.env.BREVO_API_KEY || ''
+);
 
 // Configuration de Twilio pour les SMS (lazy initialization)
 let twilioClient: ReturnType<typeof twilio> | null = null;
@@ -30,12 +26,17 @@ const getTwilioClient = () => {
 
 export const envoyerEmail = async (destinataire: string, sujet: string, texte: string) => {
   try {
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: destinataire,
-      subject: sujet,
-      text: texte
-    });
+    const sendSmtpEmail = new brevo.SendSmtpEmail();
+    sendSmtpEmail.sender = {
+      name: process.env.BREVO_SENDER_NAME || 'Opina',
+      email: process.env.BREVO_SENDER_EMAIL || ''
+    };
+    sendSmtpEmail.to = [{ email: destinataire }];
+    sendSmtpEmail.subject = sujet;
+    sendSmtpEmail.textContent = texte;
+    sendSmtpEmail.htmlContent = `<p>${texte.replace(/\n/g, '<br>')}</p>`;
+
+    await brevoApi.sendTransacEmail(sendSmtpEmail);
     console.log('Email envoyé avec succès à:', destinataire);
   } catch (error) {
     console.error('Erreur lors de l\'envoi de l\'email:', error);

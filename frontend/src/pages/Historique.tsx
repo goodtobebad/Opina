@@ -54,7 +54,7 @@ export default function Historique() {
       setHistorique(votes);
       
       // Extraire les années disponibles
-      const années = [...new Set(votes.map((vote: Vote) => getYear(new Date(vote.date_vote))))];
+      const années = [...new Set(votes.map((vote: Vote) => getYear(new Date(vote.date_vote))))] as number[];
       setAnnéesDisponibles(années.sort((a, b) => b - a));
     } catch (error: any) {
       toast.error('Erreur lors du chargement de l\'historique');

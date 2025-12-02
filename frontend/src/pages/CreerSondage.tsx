@@ -69,7 +69,6 @@ export default function CreerSondage() {
 
   // Watch date and time fields for validation
   const dateDebut = watch('date_debut');
-  const heureDebut = watch('heure_debut');
 
   const onSubmit = async (data: FormData) => {
     // Validation: catégorie obligatoire

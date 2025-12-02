@@ -4,6 +4,10 @@ import { BrowserRouter } from 'react-router-dom'
 import App from './App.tsx'
 import './index.css'
 import { AuthProvider } from './context/AuthContext.tsx'
+import { initializeCapacitor } from './capacitor.ts'
+
+// Initialiser Capacitor
+initializeCapacitor();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
