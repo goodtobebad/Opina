@@ -63,7 +63,8 @@ export const inscription = async (req: AuthRequest, res: Response) => {
         id: utilisateur.id,
         nom: utilisateur.nom,
         email: utilisateur.email,
-        est_admin: utilisateur.est_admin
+        est_admin: utilisateur.est_admin,
+        est_super_admin: utilisateur.est_super_admin
       }
     });
   } catch (error) {
@@ -115,7 +116,8 @@ export const connexion = async (req: AuthRequest, res: Response) => {
         id: utilisateur.id,
         nom: utilisateur.nom,
         email: utilisateur.email,
-        est_admin: utilisateur.est_admin
+        est_admin: utilisateur.est_admin,
+        est_super_admin: utilisateur.est_super_admin
       }
     });
   } catch (error) {
@@ -142,7 +144,7 @@ export const googleAuth = async (req: AuthRequest, res: Response) => {
       // Créer un nouvel utilisateur
       result = await pool.query(
         `INSERT INTO utilisateurs (nom, email, methode_auth, oauth_id)
-         VALUES ($1, $2, 'google', $3) RETURNING id, nom, email, est_admin`,
+         VALUES ($1, $2, 'google', $3) RETURNING id, nom, email, est_admin, est_super_admin`,
         [nom, email, googleToken]
       );
       utilisateur = result.rows[0];
@@ -152,7 +154,7 @@ export const googleAuth = async (req: AuthRequest, res: Response) => {
 
     // Créer le token JWT
     const token = jwt.sign(
-      { id: utilisateur.id, email: utilisateur.email, est_admin: utilisateur.est_admin },
+      { id: utilisateur.id, email: utilisateur.email, est_admin: utilisateur.est_admin, est_super_admin: utilisateur.est_super_admin },
       process.env.JWT_SECRET!,
       { expiresIn: '7d' }
     );
@@ -164,7 +166,8 @@ export const googleAuth = async (req: AuthRequest, res: Response) => {
         id: utilisateur.id,
         nom: utilisateur.nom,
         email: utilisateur.email,
-        est_admin: utilisateur.est_admin
+        est_admin: utilisateur.est_admin,
+        est_super_admin: utilisateur.est_super_admin
       }
     });
   } catch (error) {
@@ -191,7 +194,7 @@ export const appleAuth = async (req: AuthRequest, res: Response) => {
       // Créer un nouvel utilisateur
       result = await pool.query(
         `INSERT INTO utilisateurs (nom, email, methode_auth, oauth_id)
-         VALUES ($1, $2, 'apple', $3) RETURNING id, nom, email, est_admin`,
+         VALUES ($1, $2, 'apple', $3) RETURNING id, nom, email, est_admin, est_super_admin`,
         [nom, email, appleToken]
       );
       utilisateur = result.rows[0];
@@ -201,7 +204,7 @@ export const appleAuth = async (req: AuthRequest, res: Response) => {
 
     // Créer le token JWT
     const token = jwt.sign(
-      { id: utilisateur.id, email: utilisateur.email, est_admin: utilisateur.est_admin },
+      { id: utilisateur.id, email: utilisateur.email, est_admin: utilisateur.est_admin, est_super_admin: utilisateur.est_super_admin },
       process.env.JWT_SECRET!,
       { expiresIn: '7d' }
     );
@@ -213,7 +216,8 @@ export const appleAuth = async (req: AuthRequest, res: Response) => {
         id: utilisateur.id,
         nom: utilisateur.nom,
         email: utilisateur.email,
-        est_admin: utilisateur.est_admin
+        est_admin: utilisateur.est_admin,
+        est_super_admin: utilisateur.est_super_admin
       }
     });
   } catch (error) {

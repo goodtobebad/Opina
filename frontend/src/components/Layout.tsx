@@ -46,9 +46,11 @@ export default function Layout() {
                     <Link to="/admin/gerer-sondages" className={isActive('/admin/gerer-sondages')}>
                       Gérer les sondages
                     </Link>
-                    <Link to="/admin/gerer-categories" className={isActive('/admin/gerer-categories')}>
-                      Catégories
-                    </Link>
+                    {utilisateur?.est_super_admin && (
+                      <Link to="/admin/gerer-categories" className={isActive('/admin/gerer-categories')}>
+                        Catégories
+                      </Link>
+                    )}
                     <Link to="/admin/creer-sondage" className={isActive('/admin/creer-sondage')}>
                       Créer un sondage
                     </Link>

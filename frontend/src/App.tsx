@@ -14,7 +14,7 @@ import Connexion from './pages/Connexion';
 import Inscription from './pages/Inscription';
 import { useAuth } from './context/AuthContext';
 
-function ProtectedRoute({ children, adminOnly = false }: { children: React.ReactNode, adminOnly?: boolean }) {
+function ProtectedRoute({ children, adminOnly = false, superAdminOnly = false }: { children: React.ReactNode, adminOnly?: boolean, superAdminOnly?: boolean }) {
   const { utilisateur, chargement } = useAuth();
 
   if (chargement) {
@@ -23,6 +23,10 @@ function ProtectedRoute({ children, adminOnly = false }: { children: React.React
 
   if (!utilisateur) {
     return <Navigate to="/connexion" replace />;
+  }
+
+  if (superAdminOnly && !utilisateur.est_super_admin) {
+    return <Navigate to="/" replace />;
   }
 
   if (adminOnly && !utilisateur.est_admin) {
@@ -70,7 +74,7 @@ function App() {
           <Route 
             path="admin/gerer-categories" 
             element={
-              <ProtectedRoute adminOnly>
+              <ProtectedRoute superAdminOnly>
                 <GererCategories />
               </ProtectedRoute>
             } 
