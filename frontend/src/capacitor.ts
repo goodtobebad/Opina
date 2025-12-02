@@ -10,7 +10,8 @@ export const initializeCapacitor = async () => {
     // Configuration de la barre de statut
     try {
       await StatusBar.setStyle({ style: Style.Light });
-      await StatusBar.setBackgroundColor({ color: '#4F46E5' }); // Couleur primary
+      await StatusBar.setBackgroundColor({ color: '#ffffff' }); // Blanc pour correspondre à la navbar
+      await StatusBar.setOverlaysWebView({ overlay: false }); // Ne pas superposer sur le contenu
     } catch (error) {
       console.error('Erreur StatusBar:', error);
     }
