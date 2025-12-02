@@ -6,6 +6,7 @@ export interface AuthRequest extends Request {
     id: number;
     email: string;
     est_admin: boolean;
+    est_super_admin: boolean;
   };
 }
 
@@ -28,6 +29,13 @@ export const authentifier = (req: AuthRequest, res: Response, next: NextFunction
 export const verifierAdmin = (req: AuthRequest, res: Response, next: NextFunction) => {
   if (!req.utilisateur?.est_admin) {
     return res.status(403).json({ erreur: 'Accès refusé. Droits administrateur requis.' });
+  }
+  next();
+};
+
+export const verifierSuperAdmin = (req: AuthRequest, res: Response, next: NextFunction) => {
+  if (!req.utilisateur?.est_super_admin) {
+    return res.status(403).json({ erreur: 'Accès refusé. Droits super administrateur requis.' });
   }
   next();
 };

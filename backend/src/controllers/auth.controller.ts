@@ -43,7 +43,7 @@ export const inscription = async (req: AuthRequest, res: Response) => {
     // Créer l'utilisateur
     const result = await pool.query(
       `INSERT INTO utilisateurs (nom, email, numero_telephone, mot_de_passe, methode_auth)
-       VALUES ($1, $2, $3, $4, 'local') RETURNING id, nom, email, est_admin`,
+       VALUES ($1, $2, $3, $4, 'local') RETURNING id, nom, email, est_admin, est_super_admin`,
       [nom, email, numero_telephone, motDePasseHash]
     );
 
@@ -51,7 +51,7 @@ export const inscription = async (req: AuthRequest, res: Response) => {
 
     // Créer le token JWT
     const token = jwt.sign(
-      { id: utilisateur.id, email: utilisateur.email, est_admin: utilisateur.est_admin },
+      { id: utilisateur.id, email: utilisateur.email, est_admin: utilisateur.est_admin, est_super_admin: utilisateur.est_super_admin },
       process.env.JWT_SECRET!,
       { expiresIn: '7d' }
     );
@@ -103,7 +103,7 @@ export const connexion = async (req: AuthRequest, res: Response) => {
 
     // Créer le token JWT
     const token = jwt.sign(
-      { id: utilisateur.id, email: utilisateur.email, est_admin: utilisateur.est_admin },
+      { id: utilisateur.id, email: utilisateur.email, est_admin: utilisateur.est_admin, est_super_admin: utilisateur.est_super_admin },
       process.env.JWT_SECRET!,
       { expiresIn: '7d' }
     );
@@ -235,7 +235,7 @@ export const verifierToken = async (req: AuthRequest, res: Response) => {
     
     // Récupérer les infos de l'utilisateur
     const result = await pool.query(
-      'SELECT id, nom, email, est_admin FROM utilisateurs WHERE id = $1',
+      'SELECT id, nom, email, est_admin, est_super_admin FROM utilisateurs WHERE id = $1',
       [decoded.id]
     );
 

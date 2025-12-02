@@ -60,7 +60,12 @@ export default function Layout() {
               {utilisateur ? (
                 <>
                   <span className="text-gray-700">Bonjour, {utilisateur.nom}</span>
-                  {utilisateur.est_admin && (
+                  {utilisateur.est_super_admin && (
+                    <span className="px-2 py-1 text-xs bg-purple-100 text-purple-800 rounded-full">
+                      Super Admin
+                    </span>
+                  )}
+                  {utilisateur.est_admin && !utilisateur.est_super_admin && (
                     <span className="px-2 py-1 text-xs bg-primary-100 text-primary-800 rounded-full">
                       Admin
                     </span>

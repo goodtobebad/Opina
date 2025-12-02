@@ -7,6 +7,7 @@ interface Utilisateur {
   nom: string;
   email: string;
   est_admin: boolean;
+  est_super_admin: boolean;
 }
 
 interface AuthContextType {

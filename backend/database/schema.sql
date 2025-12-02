@@ -8,6 +8,7 @@ CREATE TABLE utilisateurs (
     numero_telephone VARCHAR(20),
     mot_de_passe VARCHAR(255),
     est_admin BOOLEAN DEFAULT FALSE,
+    est_super_admin BOOLEAN DEFAULT FALSE,
     methode_auth VARCHAR(50) DEFAULT 'local', -- 'local', 'google', 'apple'
     oauth_id VARCHAR(255),
     date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
