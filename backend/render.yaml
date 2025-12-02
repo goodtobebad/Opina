@@ -1,0 +1,3 @@
+# Build specification for Render
+buildCommand: npm install && npm run build
+startCommand: npm start
