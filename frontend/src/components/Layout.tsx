@@ -1,5 +1,6 @@
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import logo from '../assets/images/logo.png';
 
 export default function Layout() {
   const { utilisateur, deconnexion } = useAuth();
@@ -22,7 +23,7 @@ export default function Layout() {
           <div className="flex justify-between h-16">
             <div className="flex items-center space-x-8">
               <Link to="/" className="flex items-center">
-                <h1 className="text-2xl font-bold text-primary-600">Opina</h1>
+                <img src={logo} alt="Opina" className="h-12 w-auto" />
               </Link>
               <div className="hidden md:flex space-x-6">
                 <Link to="/" className={isActive('/')}>
