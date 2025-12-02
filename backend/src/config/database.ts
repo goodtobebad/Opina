@@ -23,6 +23,15 @@ const pool = process.env.DATABASE_URL
       password: process.env.DB_PASSWORD,
     });
 
+// Log which database configuration is being used
+if (process.env.DATABASE_URL) {
+  const dbUrl = process.env.DATABASE_URL;
+  const dbName = dbUrl.split('/').pop()?.split('?')[0] || 'unknown';
+  console.log(`📊 Using DATABASE_URL (database: ${dbName})`);
+} else {
+  console.log(`📊 Using local database: ${process.env.DB_NAME || 'opina'} on ${process.env.DB_HOST || 'localhost'}`);
+}
+
 pool.on('connect', () => {
   console.log('✓ Connecté à la base de données PostgreSQL');
 });
