@@ -5,6 +5,7 @@ import authRoutes from './routes/auth.routes';
 import sondagesRoutes from './routes/sondages.routes';
 import votesRoutes from './routes/votes.routes';
 import statistiquesRoutes from './routes/statistiques.routes';
+import categoriesRoutes from './routes/categories.routes';
 
 dotenv.config();
 
@@ -24,6 +25,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/sondages', sondagesRoutes);
 app.use('/api/votes', votesRoutes);
 app.use('/api/statistiques', statistiquesRoutes);
+app.use('/api/categories', categoriesRoutes);
 
 // Route de test
 app.get('/api/health', (req, res) => {

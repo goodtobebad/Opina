@@ -1,12 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm, useFieldArray } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import api from '../lib/api';
 
+interface Categorie {
+  id: number;
+  nom: string;
+  couleur: string;
+}
+
 interface FormData {
   titre: string;
   description: string;
+  id_categorie: number;
   date_debut: string;
   heure_debut: string;
   date_fin: string;
@@ -26,6 +33,20 @@ export default function CreerSondage() {
   });
   const navigate = useNavigate();
   const [chargement, setChargement] = useState(false);
+  const [categories, setCategories] = useState<Categorie[]>([]);
+
+  useEffect(() => {
+    chargerCategories();
+  }, []);
+
+  const chargerCategories = async () => {
+    try {
+      const response = await api.get('/categories');
+      setCategories(response.data.categories);
+    } catch (error) {
+      toast.error('Erreur lors du chargement des catégories');
+    }
+  };
 
   // Get minimum date (today) - update this to use useMemo or calculate inline
   const getMinDate = () => {
@@ -51,6 +72,12 @@ export default function CreerSondage() {
   const heureDebut = watch('heure_debut');
 
   const onSubmit = async (data: FormData) => {
+    // Validation: catégorie obligatoire
+    if (!data.id_categorie) {
+      toast.error('Veuillez sélectionner une catégorie');
+      return;
+    }
+
     // Validation: au moins 2 options non vides
     const optionsValides = data.options.filter(opt => opt.texte.trim());
     if (optionsValides.length < 2) {
@@ -78,6 +105,7 @@ export default function CreerSondage() {
       await api.post('/sondages', {
         titre: data.titre,
         description: data.description || null,
+        id_categorie: parseInt(data.id_categorie.toString()),
         date_debut: dateDebut.toISOString(),
         date_fin: dateFin.toISOString(),
         options: optionsValides.map(opt => ({
@@ -130,6 +158,30 @@ export default function CreerSondage() {
               className="input-field"
               disabled={chargement}
             />
+          </div>
+
+          <div>
+            <label htmlFor="id_categorie" className="block text-sm font-medium text-gray-700 mb-1">
+              Catégorie *
+            </label>
+            <select
+              id="id_categorie"
+              {...register('id_categorie', {
+                required: 'La catégorie est requise'
+              })}
+              className="input-field"
+              disabled={chargement}
+            >
+              <option value="">Sélectionnez une catégorie</option>
+              {categories.map((categorie) => (
+                <option key={categorie.id} value={categorie.id}>
+                  {categorie.nom}
+                </option>
+              ))}
+            </select>
+            {errors.id_categorie && (
+              <p className="text-red-600 text-sm mt-1">{errors.id_categorie.message}</p>
+            )}
           </div>
 
           <div className="grid md:grid-cols-2 gap-4">

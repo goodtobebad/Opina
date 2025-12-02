@@ -13,6 +13,8 @@ interface Sondage {
   date_fin: string;
   nom_createur: string;
   nombre_votes: number;
+  nom_categorie?: string;
+  couleur_categorie?: string;
 }
 
 export default function Sondages() {
@@ -143,6 +145,16 @@ export default function Sondages() {
                     to={`/sondages/${sondage.id}`}
                     className="card hover:shadow-lg transition-shadow"
                   >
+                    {sondage.nom_categorie && (
+                      <div className="mb-3">
+                        <span 
+                          className="px-3 py-1 text-xs font-medium rounded-full text-white"
+                          style={{ backgroundColor: sondage.couleur_categorie || '#3B82F6' }}
+                        >
+                          {sondage.nom_categorie}
+                        </span>
+                      </div>
+                    )}
                     <h3 className="text-xl font-semibold mb-2 text-gray-900">
                       {sondage.titre}
                     </h3>
@@ -182,10 +194,18 @@ export default function Sondages() {
                     key={sondage.id}
                     className="card opacity-75"
                   >
-                    <div className="mb-2">
+                    <div className="mb-2 flex gap-2">
                       <span className="px-3 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
                         À venir
                       </span>
+                      {sondage.nom_categorie && (
+                        <span 
+                          className="px-3 py-1 text-xs font-medium rounded-full text-white"
+                          style={{ backgroundColor: sondage.couleur_categorie || '#3B82F6' }}
+                        >
+                          {sondage.nom_categorie}
+                        </span>
+                      )}
                     </div>
                     <h3 className="text-xl font-semibold mb-2 text-gray-900">
                       {sondage.titre}

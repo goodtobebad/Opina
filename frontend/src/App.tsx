@@ -7,6 +7,7 @@ import Historique from './pages/Historique';
 import DetailSondage from './pages/DetailSondage';
 import CreerSondage from './pages/CreerSondage';
 import GererSondages from './pages/GererSondages';
+import GererCategories from './pages/GererCategories';
 import ModifierSondage from './pages/ModifierSondage';
 import Statistiques from './pages/Statistiques';
 import Connexion from './pages/Connexion';
@@ -63,6 +64,14 @@ function App() {
             element={
               <ProtectedRoute adminOnly>
                 <GererSondages />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="admin/gerer-categories" 
+            element={
+              <ProtectedRoute adminOnly>
+                <GererCategories />
               </ProtectedRoute>
             } 
           />

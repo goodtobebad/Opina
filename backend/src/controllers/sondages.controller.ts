@@ -10,9 +10,11 @@ export const obtenirSondagesOuverts = async (req: AuthRequest, res: Response) =>
     
     const result = await pool.query(
       `SELECT s.*, u.nom as nom_createur,
+       c.nom as nom_categorie, c.couleur as couleur_categorie,
        (SELECT COUNT(*) FROM votes WHERE id_sondage = s.id AND est_valide = true) as nombre_votes
        FROM sondages s
        JOIN utilisateurs u ON s.id_createur = u.id
+       LEFT JOIN categories c ON s.id_categorie = c.id
        WHERE s.date_fin > $1::timestamp
        ORDER BY s.date_debut ASC, s.date_creation DESC`,
       [maintenant]
@@ -30,9 +32,11 @@ export const obtenirTousSondages = async (req: AuthRequest, res: Response) => {
   try {
     const result = await pool.query(
       `SELECT s.*, u.nom as nom_createur,
+       c.nom as nom_categorie, c.couleur as couleur_categorie,
        (SELECT COUNT(*) FROM votes WHERE id_sondage = s.id AND est_valide = true) as nombre_votes
        FROM sondages s
        JOIN utilisateurs u ON s.id_createur = u.id
+       LEFT JOIN categories c ON s.id_categorie = c.id
        ORDER BY s.date_creation DESC`
     );
 
@@ -50,9 +54,11 @@ export const obtenirSondageParId = async (req: AuthRequest, res: Response) => {
 
     const sondageResult = await pool.query(
       `SELECT s.*, u.nom as nom_createur,
+       c.nom as nom_categorie, c.couleur as couleur_categorie,
        (SELECT COUNT(*) FROM votes WHERE id_sondage = s.id AND est_valide = true) as nombre_votes
        FROM sondages s
        JOIN utilisateurs u ON s.id_createur = u.id
+       LEFT JOIN categories c ON s.id_categorie = c.id
        WHERE s.id = $1`,
       [id]
     );
@@ -120,7 +126,22 @@ export const creerSondage = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ erreurs: errors.array() });
     }
 
-    const { titre, description, options, date_debut, date_fin } = req.body;
+    const { titre, description, options, date_debut, date_fin, id_categorie } = req.body;
+
+    // Vérifier que la catégorie est fournie
+    if (!id_categorie) {
+      return res.status(400).json({ erreur: 'La catégorie est obligatoire' });
+    }
+
+    // Vérifier que la catégorie existe
+    const categorieExiste = await client.query(
+      'SELECT id FROM categories WHERE id = $1',
+      [id_categorie]
+    );
+
+    if (categorieExiste.rows.length === 0) {
+      return res.status(400).json({ erreur: 'Catégorie invalide' });
+    }
 
     // Vérifier que la date de fin est après la date de début
     if (new Date(date_fin) <= new Date(date_debut)) {
@@ -141,9 +162,9 @@ export const creerSondage = async (req: AuthRequest, res: Response) => {
 
     // Créer le sondage
     const sondageResult = await client.query(
-      `INSERT INTO sondages (titre, description, date_debut, date_fin, id_createur)
-       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [titre, description || null, date_debut, date_fin, req.utilisateur!.id]
+      `INSERT INTO sondages (titre, description, date_debut, date_fin, id_createur, id_categorie)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      [titre, description || null, date_debut, date_fin, req.utilisateur!.id, id_categorie]
     );
 
     const sondage = sondageResult.rows[0];
@@ -181,7 +202,7 @@ export const modifierSondage = async (req: AuthRequest, res: Response) => {
   
   try {
     const { id } = req.params;
-    const { titre, description, date_debut, date_fin, options } = req.body;
+    const { titre, description, date_debut, date_fin, options, id_categorie } = req.body;
 
     // Vérifier que le sondage existe
     const sondageExistant = await client.query(
@@ -213,6 +234,18 @@ export const modifierSondage = async (req: AuthRequest, res: Response) => {
       }
     }
 
+    // Si une nouvelle catégorie est fournie, vérifier qu'elle existe
+    if (id_categorie) {
+      const categorieExiste = await client.query(
+        'SELECT id FROM categories WHERE id = $1',
+        [id_categorie]
+      );
+
+      if (categorieExiste.rows.length === 0) {
+        return res.status(400).json({ erreur: 'Catégorie invalide' });
+      }
+    }
+
     // Vérifier que la date de fin est après la date de début
     const nouvelleDateDebut = date_debut || sondage.date_debut;
     const nouvelleDateFin = date_fin || sondage.date_fin;
@@ -230,10 +263,11 @@ export const modifierSondage = async (req: AuthRequest, res: Response) => {
            description = COALESCE($2, description),
            date_debut = COALESCE($3, date_debut),
            date_fin = COALESCE($4, date_fin),
+           id_categorie = COALESCE($5, id_categorie),
            date_modification = CURRENT_TIMESTAMP
-       WHERE id = $5
+       WHERE id = $6
        RETURNING *`,
-      [titre, description, date_debut, date_fin, id]
+      [titre, description, date_debut, date_fin, id_categorie, id]
     );
 
     // Si des options sont fournies, les mettre à jour
