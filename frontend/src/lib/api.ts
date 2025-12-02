@@ -7,15 +7,12 @@ const isNativePlatform = Capacitor.isNativePlatform();
 // URL de base selon l'environnement
 const getBaseURL = () => {
   if (isNativePlatform) {
-    // En production mobile, utilisez votre domaine réel
-    // return 'https://api.opina.com/api';
-    
-    // En développement mobile, utilisez l'IP locale de votre machine
-    // Remplacez par votre IP locale (ipconfig sur Windows)
-    return 'http://192.168.1.100:3000/api'; // À MODIFIER avec votre IP
+    // Mobile app - use Render production API
+    return 'https://opina-w341.onrender.com/api';
   }
-  // Sur web, utiliser le proxy Vite
-  return '/api';
+  // Web - use Render production API (or local for development)
+  // return '/api'; // Use this for local backend via Vite proxy
+  return 'https://opina-w341.onrender.com/api'; // Use Render directly
 };
 
 const api = axios.create({

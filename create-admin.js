@@ -14,22 +14,42 @@ async function createAdmin() {
     // Hash the password
     const hashedPassword = await bcrypt.hash('admin123', 10);
     
-    // Update the existing admin user with proper password hash
-    const result = await pool.query(
-      `UPDATE utilisateurs 
-       SET mot_de_passe = $1 
-       WHERE email = 'admin@opina.com' 
-       RETURNING id, nom, email, est_admin`,
-      [hashedPassword]
+    // Create/update super admin
+    console.log('Creating superadmin@opina.com...');
+    await pool.query(
+      `INSERT INTO utilisateurs (nom, email, mot_de_passe, est_admin, est_super_admin, methode_auth)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       ON CONFLICT (email) 
+       DO UPDATE SET 
+         mot_de_passe = EXCLUDED.mot_de_passe,
+         est_admin = EXCLUDED.est_admin,
+         est_super_admin = EXCLUDED.est_super_admin`,
+      ['Super Admin', 'superadmin@opina.com', hashedPassword, true, true, 'local']
     );
+    console.log('✅ Super admin created/updated!');
     
-    if (result.rows.length > 0) {
-      console.log('\n✅ Admin account updated successfully!');
-      console.log('\nCredentials:');
-      console.log('Email: admin@opina.com');
-      console.log('Password: admin123');
-      console.log('\nYou can now login at: http://localhost:5173/connexion');
-    }
+    // Create/update regular admin
+    console.log('Creating admin@opina.com...');
+    await pool.query(
+      `INSERT INTO utilisateurs (nom, email, mot_de_passe, est_admin, est_super_admin, methode_auth)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       ON CONFLICT (email) 
+       DO UPDATE SET 
+         mot_de_passe = EXCLUDED.mot_de_passe,
+         est_admin = EXCLUDED.est_admin,
+         est_super_admin = EXCLUDED.est_super_admin`,
+      ['Admin', 'admin@opina.com', hashedPassword, true, false, 'local']
+    );
+    console.log('✅ Regular admin created/updated!');
+    
+    console.log('\n✅ Admin accounts ready!');
+    console.log('\n🔴 Super Admin:');
+    console.log('   Email: superadmin@opina.com');
+    console.log('   Password: admin123');
+    console.log('\n🟠 Admin:');
+    console.log('   Email: admin@opina.com');
+    console.log('   Password: admin123');
+    console.log('\nLogin at: http://localhost:5173/connexion');
     
     await pool.end();
   } catch (error) {

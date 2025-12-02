@@ -178,11 +178,11 @@ export const creerSondage = async (req: AuthRequest, res: Response) => {
     console.log('✅ Sondage créé:', sondage.id);
 
     // Créer les options
-    const optionsPromises = options.map((option: { texte: string; description?: string }, index: number) => {
+    const optionsPromises = options.map((option: { texte: string }, index: number) => {
       return client.query(
-        `INSERT INTO options_sondage (id_sondage, texte, description, ordre)
-         VALUES ($1, $2, $3, $4) RETURNING *`,
-        [sondage.id, option.texte || option, option.description || null, index]
+        `INSERT INTO options_sondage (id_sondage, texte, ordre)
+         VALUES ($1, $2, $3) RETURNING *`,
+        [sondage.id, option.texte || option, index]
       );
     });
 
