@@ -10,11 +10,36 @@ import categoriesRoutes from './routes/categories.routes';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = parseInt(process.env.PORT || '3000', 10);
 
 // Middleware
+const allowedOrigins = [
+  process.env.FRONTEND_URL || 'http://localhost:5173',
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'capacitor://localhost',
+  'ionic://localhost',
+  'http://localhost'
+];
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: (origin, callback) => {
+    // Autoriser les requêtes sans origine (mobile apps)
+    if (!origin) return callback(null, true);
+    
+    // Vérifier si l'origine est dans la liste autorisée
+    if (allowedOrigins.indexOf(origin) !== -1 || origin.includes('capacitor')) {
+      callback(null, true);
+    } else {
+      // En production, bloquer les origines non autorisées
+      if (process.env.NODE_ENV === 'production') {
+        callback(new Error('Not allowed by CORS'));
+      } else {
+        // En développement, autoriser tout
+        callback(null, true);
+      }
+    }
+  },
   credentials: true
 }));
 app.use(express.json());
@@ -45,9 +70,10 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   });
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`\n🚀 Serveur démarré sur le port ${PORT}`);
   console.log(`📍 API disponible sur: http://localhost:${PORT}/api`);
+  console.log(`🌍 Environnement: ${process.env.NODE_ENV || 'development'}`);
 });
 
 export default app;
