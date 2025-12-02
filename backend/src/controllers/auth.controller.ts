@@ -83,20 +83,28 @@ export const connexion = async (req: AuthRequest, res: Response) => {
 
     const { email, mot_de_passe } = req.body;
 
+    // Nettoyer l'email (trim et lowercase)
+    const emailCleaned = email.trim().toLowerCase();
+
+    console.log(`🔐 Tentative de connexion: ${emailCleaned}`);
+
     // Trouver l'utilisateur
     const result = await pool.query(
-      'SELECT * FROM utilisateurs WHERE email = $1 AND methode_auth = $2',
-      [email, 'local']
+      'SELECT * FROM utilisateurs WHERE LOWER(email) = $1 AND methode_auth = $2',
+      [emailCleaned, 'local']
     );
 
     if (result.rows.length === 0) {
+      console.log(`❌ Utilisateur non trouvé: ${emailCleaned}`);
       return res.status(401).json({ erreur: 'Email ou mot de passe incorrect' });
     }
 
     const utilisateur = result.rows[0];
+    console.log(`✅ Utilisateur trouvé: ${utilisateur.email} (ID: ${utilisateur.id})`);
 
     // Vérifier le mot de passe
     const motDePasseValide = await bcrypt.compare(mot_de_passe, utilisateur.mot_de_passe);
+    console.log(`🔑 Mot de passe valide: ${motDePasseValide}`);
 
     if (!motDePasseValide) {
       return res.status(401).json({ erreur: 'Email ou mot de passe incorrect' });

@@ -123,13 +123,17 @@ export const creerSondage = async (req: AuthRequest, res: Response) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.error('Validation errors:', errors.array());
       return res.status(400).json({ erreurs: errors.array() });
     }
 
     const { titre, description, options, date_debut, date_fin, id_categorie } = req.body;
+    
+    console.log('📝 Création de sondage:', { titre, date_debut, date_fin, id_categorie, options_count: options?.length });
 
     // Vérifier que la catégorie est fournie
     if (!id_categorie) {
+      console.error('❌ Catégorie manquante');
       return res.status(400).json({ erreur: 'La catégorie est obligatoire' });
     }
 
@@ -140,11 +144,13 @@ export const creerSondage = async (req: AuthRequest, res: Response) => {
     );
 
     if (categorieExiste.rows.length === 0) {
+      console.error('❌ Catégorie invalide:', id_categorie);
       return res.status(400).json({ erreur: 'Catégorie invalide' });
     }
 
     // Vérifier que la date de fin est après la date de début
     if (new Date(date_fin) <= new Date(date_debut)) {
+      console.error('❌ Dates invalides');
       return res.status(400).json({ erreur: 'La date de fin doit être après la date de début' });
     }
 
@@ -155,6 +161,7 @@ export const creerSondage = async (req: AuthRequest, res: Response) => {
     );
 
     if (titreExistant.rows.length > 0) {
+      console.error('❌ Titre déjà existant');
       return res.status(400).json({ erreur: 'Un sondage avec ce titre existe déjà' });
     }
 
@@ -168,6 +175,7 @@ export const creerSondage = async (req: AuthRequest, res: Response) => {
     );
 
     const sondage = sondageResult.rows[0];
+    console.log('✅ Sondage créé:', sondage.id);
 
     // Créer les options
     const optionsPromises = options.map((option: { texte: string; description?: string }, index: number) => {
@@ -189,7 +197,12 @@ export const creerSondage = async (req: AuthRequest, res: Response) => {
     });
   } catch (error) {
     await client.query('ROLLBACK');
-    console.error('Erreur lors de la création du sondage:', error);
+    console.error('❌ Erreur lors de la création du sondage:', error);
+    // Log more details about the error
+    if (error instanceof Error) {
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+    }
     res.status(500).json({ erreur: 'Erreur lors de la création du sondage' });
   } finally {
     client.release();
