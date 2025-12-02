@@ -76,7 +76,7 @@ export const obtenirSondageParId = async (req: AuthRequest, res: Response) => {
     
     if (req.utilisateur) {
       const voteResult = await pool.query(
-        `SELECT * FROM votes WHERE id_sondage = $1 AND id_utilisateur = $2`,
+        `SELECT * FROM votes WHERE id_sondage = $1 AND id_utilisateur = $2 AND est_valide = true`,
         [id, req.utilisateur.id]
       );
       aVote = voteResult.rows.length > 0;

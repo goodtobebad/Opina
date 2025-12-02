@@ -43,14 +43,26 @@ export const voter = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ erreur: 'Ce sondage est terminé' });
     }
 
-    // Vérifier que l'utilisateur n'a pas déjà voté
+    // Vérifier que l'utilisateur n'a pas déjà voté avec un vote validé
     const voteExistant = await client.query(
       `SELECT * FROM votes WHERE id_sondage = $1 AND id_utilisateur = $2`,
       [id_sondage, id_utilisateur]
     );
 
     if (voteExistant.rows.length > 0) {
-      return res.status(400).json({ erreur: 'Vous avez déjà voté pour ce sondage' });
+      const vote = voteExistant.rows[0];
+      
+      // Si le vote est déjà validé, refuser
+      if (vote.est_valide) {
+        return res.status(400).json({ erreur: 'Vous avez déjà voté pour ce sondage' });
+      }
+      
+      // Si le vote n'est pas validé, on peut le supprimer et permettre un nouveau vote
+      console.log('🔄 Vote non validé trouvé, suppression pour permettre un nouveau vote');
+      await client.query('DELETE FROM votes WHERE id = $1', [vote.id]);
+      
+      // Supprimer aussi l'ancien token de validation
+      await client.query('DELETE FROM tokens_validation WHERE id_vote = $1', [vote.id]);
     }
 
     // Vérifier que l'option appartient au sondage
