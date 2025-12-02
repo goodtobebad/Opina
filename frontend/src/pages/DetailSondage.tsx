@@ -490,6 +490,30 @@ export default function DetailSondage() {
               </div>
             </div>
           </div>
+        ) : !utilisateur ? (
+          <div className="bg-primary-50 border border-primary-200 rounded-lg p-8 text-center">
+            <div className="text-5xl mb-4">🗳️</div>
+            <h3 className="text-xl font-semibold text-primary-900 mb-3">
+              Connectez-vous pour voter
+            </h3>
+            <p className="text-primary-700 mb-6">
+              Vous devez être connecté pour participer à ce sondage.
+            </p>
+            <div className="flex gap-3 justify-center">
+              <button
+                onClick={() => navigate('/connexion', { state: { from: { pathname: `/sondages/${id}` } } })}
+                className="btn-primary"
+              >
+                Se connecter
+              </button>
+              <button
+                onClick={() => navigate('/inscription', { state: { from: { pathname: `/sondages/${id}` } } })}
+                className="btn-secondary"
+              >
+                S'inscrire
+              </button>
+            </div>
+          </div>
         ) : (
           <div className="space-y-6">
             <div>

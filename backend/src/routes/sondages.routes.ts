@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { body } from 'express-validator';
 import * as sondagesController from '../controllers/sondages.controller';
-import { authentifier, verifierAdmin } from '../middleware/auth.middleware';
+import { authentifier, authentifierOptionnelle, verifierAdmin } from '../middleware/auth.middleware';
 
 const router = Router();
 
@@ -11,8 +11,8 @@ router.get('/ouverts', sondagesController.obtenirSondagesOuverts);
 // Obtenir tous les sondages (admin)
 router.get('/', authentifier, verifierAdmin, sondagesController.obtenirTousSondages);
 
-// Obtenir un sondage par ID
-router.get('/:id', authentifier, sondagesController.obtenirSondageParId);
+// Obtenir un sondage par ID (public mais avec authentification optionnelle)
+router.get('/:id', authentifierOptionnelle, sondagesController.obtenirSondageParId);
 
 // Créer un sondage (admin uniquement)
 router.post('/',

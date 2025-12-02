@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '../context/AuthContext';
 
@@ -15,13 +15,18 @@ export default function Inscription() {
   const { register, handleSubmit, watch, formState: { errors } } = useForm<FormData>();
   const { inscription } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [chargement, setChargement] = useState(false);
+
+  // Récupérer l'URL de redirection depuis l'état de navigation
+  const from = (location.state as any)?.from?.pathname || '/sondages';
 
   const onSubmit = async (data: FormData) => {
     setChargement(true);
     try {
       await inscription(data.nom, data.email, data.numero_telephone, data.mot_de_passe);
-      navigate('/sondages');
+      // Rediriger vers la page d'origine ou vers /sondages par défaut
+      navigate(from, { replace: true });
     } catch (error) {
       // L'erreur est gérée par le contexte Auth avec toast
     } finally {

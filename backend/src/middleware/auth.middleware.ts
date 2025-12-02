@@ -31,3 +31,20 @@ export const verifierAdmin = (req: AuthRequest, res: Response, next: NextFunctio
   }
   next();
 };
+
+// Authentification optionnelle - ne bloque pas si pas de token
+export const authentifierOptionnelle = (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    
+    if (token) {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
+      req.utilisateur = decoded;
+    }
+    // Continue même sans token
+    next();
+  } catch (error) {
+    // Continue même si le token est invalide
+    next();
+  }
+};
