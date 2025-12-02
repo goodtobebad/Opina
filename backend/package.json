@@ -7,7 +7,9 @@
     "dev": "nodemon src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "test": "jest"
+    "test": "jest",
+    "postinstall": "npm run build",
+    "init-db": "node scripts/init-db.js"
   },
   "keywords": [
     "survey",
