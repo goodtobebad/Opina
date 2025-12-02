@@ -15,23 +15,36 @@ interface Sondage {
   nombre_votes: number;
   nom_categorie?: string;
   couleur_categorie?: string;
+  id_categorie?: number;
+}
+
+interface Categorie {
+  id: number;
+  nom: string;
+  couleur: string;
 }
 
 export default function Sondages() {
   const [sondages, setSondages] = useState<Sondage[]>([]);
+  const [categories, setCategories] = useState<Categorie[]>([]);
   const [chargement, setChargement] = useState(true);
   const [recherche, setRecherche] = useState('');
+  const [categorieSelectionnee, setCategorieSelectionnee] = useState<string>('');
 
   useEffect(() => {
-    chargerSondages();
+    chargerDonnees();
   }, []);
 
-  const chargerSondages = async () => {
+  const chargerDonnees = async () => {
     try {
-      const response = await api.get('/sondages/ouverts');
-      setSondages(response.data.sondages);
+      const [sondagesRes, categoriesRes] = await Promise.all([
+        api.get('/sondages/ouverts'),
+        api.get('/categories')
+      ]);
+      setSondages(sondagesRes.data.sondages);
+      setCategories(categoriesRes.data.categories);
     } catch (error: any) {
-      toast.error('Erreur lors du chargement des sondages');
+      toast.error('Erreur lors du chargement des données');
     } finally {
       setChargement(false);
     }
@@ -46,13 +59,25 @@ export default function Sondages() {
   };
 
   const filtrerSondages = (sondagesList: Sondage[]) => {
-    if (!recherche.trim()) return sondagesList;
-    
-    const termeRecherche = recherche.toLowerCase();
-    return sondagesList.filter(sondage => 
-      sondage.titre.toLowerCase().includes(termeRecherche) ||
-      sondage.description?.toLowerCase().includes(termeRecherche)
-    );
+    let resultats = sondagesList;
+
+    // Filtrer par catégorie
+    if (categorieSelectionnee) {
+      resultats = resultats.filter(sondage => 
+        sondage.id_categorie?.toString() === categorieSelectionnee
+      );
+    }
+
+    // Filtrer par recherche
+    if (recherche.trim()) {
+      const termeRecherche = recherche.toLowerCase();
+      resultats = resultats.filter(sondage => 
+        sondage.titre.toLowerCase().includes(termeRecherche) ||
+        sondage.description?.toLowerCase().includes(termeRecherche)
+      );
+    }
+
+    return resultats;
   };
 
   const sondagesOuverts = filtrerSondages(sondages.filter(s => estOuvert(s.date_debut)));
@@ -72,7 +97,7 @@ export default function Sondages() {
         <h1 className="text-3xl font-bold mb-4">Sondages</h1>
         
         {/* Barre de recherche */}
-        <div className="card">
+        <div className="card space-y-4">
           <div className="relative">
             <input
               type="text"
@@ -99,17 +124,43 @@ export default function Sondages() {
                 onClick={() => setRecherche('')}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                ✕
               </button>
             )}
           </div>
-          {recherche && (
-            <div className="mt-2 text-sm text-gray-600">
-              {sondagesOuverts.length + sondagesAVenir.length} résultat{sondagesOuverts.length + sondagesAVenir.length > 1 ? 's' : ''} trouvé{sondagesOuverts.length + sondagesAVenir.length > 1 ? 's' : ''}
-            </div>
-          )}
+
+          {/* Filtre par catégorie */}
+          <div className="flex flex-wrap gap-2 items-center">
+            <span className="text-sm font-medium text-gray-700">Catégories:</span>
+            <button
+              onClick={() => setCategorieSelectionnee('')}
+              className={`px-3 py-1 text-sm rounded-full transition-colors ${
+                categorieSelectionnee === '' 
+                  ? 'bg-primary-600 text-white' 
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              Toutes
+            </button>
+            {categories.map((categorie) => (
+              <button
+                key={categorie.id}
+                onClick={() => setCategorieSelectionnee(categorie.id.toString())}
+                className={`px-3 py-1 text-sm rounded-full transition-colors ${
+                  categorieSelectionnee === categorie.id.toString()
+                    ? 'text-white'
+                    : 'opacity-70 hover:opacity-100'
+                }`}
+                style={{
+                  backgroundColor: categorieSelectionnee === categorie.id.toString()
+                    ? categorie.couleur
+                    : `${categorie.couleur}40`
+                }}
+              >
+                {categorie.nom}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
